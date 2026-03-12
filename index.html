@@ -6,8 +6,6 @@
   <title>DzDiniro | لكل المعاملات المالية و الخدماتية الرقمية</title>
   <meta name="description" content="DzDiniro - منصتك الأولى للخدمات المالية والرقمية في الجزائر. شحن ألعاب، تحويل أموال، بيع وشراء العملات الرقمية.">
   <link rel="stylesheet" href="css/style.css">
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <!-- Background Effects -->
@@ -31,9 +29,6 @@
       <a href="#packages">الباقات</a>
       <a href="#order">الطلب</a>
       <a href="#" class="how-it-works-link" onclick="document.getElementById('howItWorksModal').classList.add('active'); return false;">💡 كيف يعمل الموقع؟</a>
-      <div id="authContainer" style="display: inline-block;">
-        <a href="#" class="btn-auth" id="btnOpenAuth" onclick="document.getElementById('authModal').classList.add('active'); return false;" style="background: var(--gradient-main); padding: 0.5rem 1rem; border-radius: 20px; color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; position: relative; z-index: 9999; pointer-events: auto;">👤 تسجيل الدخول</a>
-      </div>
       <a href="admin.html" class="admin-link">🔒 <span>لوحة التحكم</span></a>
     </div>
   </nav>
@@ -763,112 +758,6 @@
         </div>
       </div>
       <button class="btn-close-modal" style="margin-top: 2rem;" onclick="document.getElementById('howItWorksModal').classList.remove('active')">فهمت، شكراً 👍</button>
-    </div>
-  </div>
-
-  <!-- Auth Modal (Login / Register) -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal" style="max-width: 400px; padding: 2rem;">
-      <div class="auth-tabs">
-        <button id="tabLogin" class="auth-tab active">تسجيل الدخول</button>
-        <button id="tabRegister" class="auth-tab">إنشاء حساب</button>
-      </div>
-
-      <div id="loginForm">
-        <div class="input-group" style="margin-bottom: 1.5rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">البريد الإلكتروني</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">✉️</span>
-            <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني" autocomplete="email" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <div class="input-group" style="margin-bottom: 2rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">كلمة المرور</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">🔒</span>
-            <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" autocomplete="current-password" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <button id="btnRealLogin" class="btn-submit" style="width: 100%; padding: 0.8rem; border-radius: 8px;">تسجيل الدخول</button>
-      </div>
-
-      <div id="registerForm" style="display: none;">
-        <div class="input-group" style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">الاسم الكامل</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">👤</span>
-            <input type="text" id="regName" placeholder="محمد علي..." autocomplete="name" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <div class="input-group" style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">رقم الهاتف</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">📱</span>
-            <input type="tel" id="regPhone" placeholder="0555..." autocomplete="tel" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <div class="input-group" style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">البريد الإلكتروني</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">✉️</span>
-            <input type="email" id="regEmail" placeholder="example@email.com" autocomplete="email" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <div class="input-group" style="margin-bottom: 2rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); text-align: right;">كلمة المرور</label>
-          <div style="position: relative;">
-            <span class="input-icon" style="top: 50%; transform: translateY(-50%);">🔒</span>
-            <input type="password" id="regPassword" placeholder="6 أحرف على الأقل" minlength="6" autocomplete="new-password" style="width: 100%; padding: 1rem 1.4rem 1rem 3.2rem; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); color: var(--text-primary); text-align: right;">
-          </div>
-        </div>
-        <button id="btnRealRegister" class="btn-submit" style="width: 100%; padding: 0.8rem; border-radius: 8px;">إنشاء الحساب</button>
-      </div>
-
-      <button class="btn-close-modal" id="btnCloseAuth" style="margin-top: 1.5rem; background: rgba(255,255,255,0.1); color: white; width: 100%;">إلغاء</button>
-    </div>
-  </div>
-
-  <!-- Account Dashboard Modal -->
-  <div class="modal-overlay" id="dashboardModal">
-    <div class="modal" style="max-width: 600px; padding: 2rem; width: 95%;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 700;">👤 حسابي</h2>
-        <button id="btnLogout" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 1rem; border-radius: var(--radius-sm); font-weight: bold; cursor: pointer;">تسجيل الخروج</button>
-      </div>
-
-      <!-- Dashboard Stats -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.5rem; border-radius: var(--radius-md); text-align: center;">
-          <div style="font-size: 2rem; margin-bottom: 0.5rem;">👋</div>
-          <div id="dashName" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 0.3rem;">جارٍ التحميل...</div>
-          <div id="dashEmail" style="color: var(--text-muted); font-size: 0.85rem;">...</div>
-        </div>
-        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; display: flex; flex-direction: column; justify-content: center;">
-          <div style="color: var(--text-muted); font-weight: bold; margin-bottom: 0.5rem;">رصيد الأرباح (الإحالات)</div>
-          <div id="dashBalance" style="font-size: 1.8rem; font-weight: 900; color: var(--accent-green); font-family: 'Orbitron', sans-serif;">0 دج</div>
-          <div style="font-size: 0.8rem; margin-top: 0.3rem; color: var(--accent-gold);">2% عن كل طلب! 🤑</div>
-        </div>
-      </div>
-
-      <!-- Referral Section -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
-        <h3 style="margin-bottom: 1rem; color: var(--accent-gold); display: flex; align-items: center; gap: 0.5rem;">🔗 رابط الإحالة الخاص بك</h3>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">شارك هذا الرابط مع أصدقائك. أي شخص يسجل حساباً ويشتري من موقعنا عبر رابطك، ستحصل أنت على <strong>2%</strong> من قيمة طلبه مباشرة في رصيدك!</p>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="text" id="dashRefLink" readonly style="flex: 1; padding: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); background: rgba(0,0,0,0.3); color: white; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; direction: ltr; text-align: left;">
-          <button id="btnCopyDashRef" style="background: var(--gradient-main); border: none; outline: none; padding: 0 1rem; border-radius: var(--radius-sm); color: white; font-weight: bold; cursor: pointer;">نسخ</button>
-        </div>
-      </div>
-
-      <!-- Order History -->
-      <div>
-        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">📦 سجل طلباتك</h3>
-        <div id="dashOrdersList" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem;">
-          <div style="text-align: center; color: var(--text-muted); padding: 1rem;">جاري تحميل الطلبات...</div>
-        </div>
-      </div>
-
-      <button class="btn-close-modal" id="btnCloseDashboard" style="margin-top: 1.5rem; width: 100%;">إغلاق</button>
     </div>
   </div>
 
