@@ -1,0 +1,6 @@
+[phases.setup]
+cmds = ["apt-get update && apt-get install -y chromium-browser"]
+
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium-browser"
