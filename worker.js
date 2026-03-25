@@ -12,7 +12,7 @@
 // ============================================================
 
 import { createClient } from '@supabase/supabase-js';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 // ============================================================
 // CONFIG — Edit these values before running
