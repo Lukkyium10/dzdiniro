@@ -171,147 +171,124 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     await page.setViewport({ width: 1280, height: 900 });
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
 
-    // ── STEP 1: Login ──────────────────────────────────────────
-    console.log('  📄 [1/5] Opening Shop2Game login page...');
-    await page.goto('https://shop2game.com/login', { waitUntil: 'networkidle2', timeout: 60000 });
+    // ── STEP 1: Go directly to Free Fire top-up page ───────────
+    console.log('  📄 [1/5] Opening Shop2Game Free Fire top-up page...');
+    await page.goto('https://shop2game.com/?channel=230199&item=26781', { waitUntil: 'networkidle2', timeout: 60000 });
+    await new Promise(r => setTimeout(r, 3000));
 
-    // Fill email
-    await page.waitForSelector('input[type="email"], input[name="email"], #email', { timeout: 15000 });
-    await page.type('input[type="email"], input[name="email"], #email', CONFIG.FREEFIRE_SHOP2GAME_EMAIL, { delay: 50 });
-
-    // Fill password
-    await page.type('input[type="password"], input[name="password"], #password', CONFIG.FREEFIRE_SHOP2GAME_PASSWORD, { delay: 50 });
-
-    // Submit login
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),
-      page.click('button[type="submit"], .btn-login, .login-btn'),
-    ]);
-    console.log('  ✅ [1/5] Logged in to Shop2Game');
-
-    // ── STEP 2: Go to Free Fire top-up page ────────────────────
-    console.log('  📄 [2/5] Navigating to Free Fire top-up...');
-    await page.goto('https://shop2game.com/app/100067/topup', { waitUntil: 'networkidle2', timeout: 60000 });
-    await new Promise(r => setTimeout(r, 2000));
-
-    // ── STEP 3: Enter Player ID ────────────────────────────────
-    console.log(`  📄 [3/5] Entering player ID: ${playerId}...`);
-    // Shop2Game usually has a UID input field
-    await page.waitForSelector('input[placeholder*="ID"], input[placeholder*="UID"], input[name*="uid"], input[name*="id"], #uid', { timeout: 15000 });
-    const uidInput = await page.$('input[placeholder*="ID"], input[placeholder*="UID"], input[name*="uid"], input[name*="id"], #uid');
+    // ── STEP 2: Enter Player ID ────────────────────────────────
+    console.log(`  📄 [2/5] Entering player ID: ${playerId}...`);
+    await page.waitForSelector('input[id=":rs:"], input[placeholder*="معرف اللاعب"], input[placeholder*="ID"]', { timeout: 15000 });
+    const uidInput = await page.$('input[id=":rs:"], input[placeholder*="معرف اللاعب"], input[placeholder*="ID"]');
+    
+    // Clear and type ID
     await uidInput.click({ clickCount: 3 });
-    await uidInput.type(playerId, { delay: 50 });
+    await page.keyboard.press('Backspace');
+    await uidInput.type(playerId, { delay: 60 });
+    await new Promise(r => setTimeout(r, 2000));
+    console.log('  ✅ [2/5] Player ID entered');
 
-    // Click verify/check button if it exists
-    const verifyBtn = await page.$('button:not([type="submit"]):not(.pay), .verify-btn, .check-btn');
-    if (verifyBtn) {
-      await verifyBtn.click();
-      await new Promise(r => setTimeout(r, 2000));
-    }
-    console.log('  ✅ [3/5] Player ID entered');
-
-    // ── STEP 4: Select the correct package ─────────────────────
-    console.log(`  📄 [4/5] Selecting package with ${amount} diamonds...`);
-    // Find packages by text content matching the amount
-    const packages = await page.$$('.product-item, .package-item, .topup-item, [class*="product"], [class*="package"]');
+    // ── STEP 3: Select the correct package ─────────────────────
+    console.log(`  📄 [3/5] Selecting package: ${amount} diamonds...`);
+    const packages = await page.$$('[role="radio"]');
     let selected = false;
     for (const pkg of packages) {
       const text = await page.evaluate(el => el.textContent, pkg);
-      if (text.includes(String(amount)) || text.includes(amount)) {
+      if (text.includes(String(amount))) {
         await pkg.click();
         selected = true;
-        console.log(`  ✅ [4/5] Selected package: ${amount} diamonds`);
+        console.log(`  ✅ [3/5] Selected package: ${amount} diamonds`);
         break;
       }
     }
     if (!selected) {
-      console.error(`  ❌ [4/5] Could not find package for ${amount} diamonds`);
+      console.error(`  ❌ [3/5] Could not find package for ${amount} diamonds`);
       return false;
     }
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 2000));
 
-    // ── STEP 5: Pay ────────────────────────────────────────────
-    console.log('  📄 [5/5] Initiating payment...');
+    // ── STEP 4: Click Buy Now ──────────────────────────────────
+    console.log('  📄 [4/5] Clicking Buy Now...');
+    const buyBtn = await page.$('button.bg-primary-red, button:has-text("شراء الآن"), button:has-text("Buy Now")');
+    if (buyBtn) {
+      await buyBtn.click();
+      await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
+      console.log('  ✅ [4/5] Proceeded to checkout page');
+    } else {
+      console.error('  ❌ [4/5] Buy Now button not found.');
+      return false;
+    }
+
+    // ── STEP 5: Fill Credit Card Validation (Adyen iFrame) ─────
+    console.log('  💳 [5/5] Filling credit card details...');
+    await new Promise(r => setTimeout(r, 5000)); // wait for iframes to load
+
+    // Adyen uses 3 separate iframes for card number, expiry, and CVV
+    const frames = page.frames();
+
+    // 1. Fill Card Number Iframe
+    const cardFrame = frames.find(f => f.url().includes('securedFields.html?type=card'));
+    if (cardFrame) {
+      await cardFrame.waitForSelector('input', { timeout: 10000 });
+      const numInput = await cardFrame.$('input');
+      await numInput.type(CONFIG.CARD_NUMBER, { delay: 60 });
+    }
+
+    // 2. Fill Expiry Date Iframe
+    const expFrame = frames.find(f => f.url().includes('securedFields.html?type=gsf') && f.name().includes('encryptedExpiryDate'));
+    // Sometimes Adyen groups expiry or uses just one generic GSF. We try multiple approaches:
+    if (expFrame) {
+      await expFrame.waitForSelector('input', { timeout: 5000 });
+      const expInput = await expFrame.$('input');
+      await expInput.type(`${CONFIG.CARD_EXPIRY_MONTH}${CONFIG.CARD_EXPIRY_YEAR}`, { delay: 60 });
+    } else {
+      // Alternative handling for Adyen split fields if named differently
+      const allFrames = frames.filter(f => f.url().includes('securedFields'));
+      for (const f of allFrames) {
+        const input = await f.$('input#encryptedExpiryDate');
+        if (input) await input.type(`${CONFIG.CARD_EXPIRY_MONTH}${CONFIG.CARD_EXPIRY_YEAR}`, { delay: 60 });
+      }
+    }
+
+    // 3. Fill CVV Iframe
+    const cvvFrame = frames.find(f => f.url().includes('securedFields.html?type=gsf') && f.name().includes('encryptedSecurityCode'));
+    if (cvvFrame) {
+      await cvvFrame.waitForSelector('input', { timeout: 5000 });
+      const cvvInput = await cvvFrame.$('input');
+      await cvvInput.type(CONFIG.CARD_CVV, { delay: 60 });
+    } else {
+      const allFrames = frames.filter(f => f.url().includes('securedFields'));
+      for (const f of allFrames) {
+        const input = await f.$('input#encryptedSecurityCode');
+        if (input) await input.type(CONFIG.CARD_CVV, { delay: 60 });
+      }
+    }
+    
+    console.log('  ✅ Card details filled');
+
+    // ── STEP 6: Final Pay Button ───────────────────────────────
     // Click the main Buy/Pay button
-    await page.waitForSelector('button[type="submit"], .btn-buy, .buy-btn, .pay-btn', { timeout: 10000 });
+    await page.waitForSelector('button.bg-primary-red, button:has-text("المتابعة الى شاشة الدفع")', { timeout: 10000 });
 
     if (CONFIG.DRY_RUN) {
-      console.log('  🧪 [DRY RUN] Would click Pay button here — skipping real payment.');
+      console.log('  🧪 [DRY RUN] Would click Final Pay button here — skipping real payment.');
       console.log('  🧪 [DRY RUN] Set DRY_RUN=false in Railway Variables to enable real payments.');
       return false; // return false so order goes back to pending
     }
 
-    await page.click('button[type="submit"], .btn-buy, .buy-btn, .pay-btn');
+    await page.click('button.bg-primary-red, button:has-text("المتابعة الى شاشة الدفع")');
     await new Promise(r => setTimeout(r, 3000));
 
-    // Select saved card if a payment method page appears
-    const cardOption = await page.$('.saved-card, .card-item, [class*="credit-card"], [class*="saved"]');
-    if (cardOption) {
-      await cardOption.click();
-      await new Promise(r => setTimeout(r, 1000));
-    }
-
-    // Fill card details if a card form appears (Shop2Game has no saved card feature)
-    const cardNumberInput = await page.$('input[name*="card"], input[placeholder*="card number"], input[placeholder*="Card Number"], #cardNumber, [class*="cardNumber"]');
-    if (cardNumberInput) {
-      console.log('  💳 Filling card details...');
-      await cardNumberInput.click({ clickCount: 3 });
-      await cardNumberInput.type(CONFIG.CARD_NUMBER, { delay: 60 });
-
-      // Expiry month
-      const expiryMonth = await page.$('input[name*="month"], input[placeholder*="MM"], select[name*="month"]');
-      if (expiryMonth) {
-        const tagName = await page.evaluate(el => el.tagName.toLowerCase(), expiryMonth);
-        if (tagName === 'select') {
-          await page.select('select[name*="month"]', CONFIG.CARD_EXPIRY_MONTH);
-        } else {
-          await expiryMonth.click({ clickCount: 3 });
-          await expiryMonth.type(CONFIG.CARD_EXPIRY_MONTH, { delay: 40 });
-        }
-      }
-
-      // Expiry year
-      const expiryYear = await page.$('input[name*="year"], input[placeholder*="YY"], select[name*="year"]');
-      if (expiryYear) {
-        const tagName = await page.evaluate(el => el.tagName.toLowerCase(), expiryYear);
-        if (tagName === 'select') {
-          await page.select('select[name*="year"]', CONFIG.CARD_EXPIRY_YEAR);
-        } else {
-          await expiryYear.click({ clickCount: 3 });
-          await expiryYear.type(CONFIG.CARD_EXPIRY_YEAR, { delay: 40 });
-        }
-      }
-
-      // Combined expiry (MM/YY format)
-      const expiryCombo = await page.$('input[name*="expir"], input[placeholder*="MM/YY"], input[placeholder*="MM/YYYY"]');
-      if (expiryCombo) {
-        await expiryCombo.click({ clickCount: 3 });
-        await expiryCombo.type(`${CONFIG.CARD_EXPIRY_MONTH}/${CONFIG.CARD_EXPIRY_YEAR}`, { delay: 40 });
-      }
-
-      // CVV
-      const cvvInput = await page.$('input[name*="cvv"], input[name*="cvc"], input[placeholder*="CVV"], input[placeholder*="CVC"], #cvv, #cvc');
-      if (cvvInput) {
-        await cvvInput.click({ clickCount: 3 });
-        await cvvInput.type(CONFIG.CARD_CVV, { delay: 50 });
-      }
-      console.log('  ✅ Card details filled');
-    }
-
-    // Click confirm/pay button
-    const confirmBtn = await page.$('.confirm-payment, .btn-confirm, .pay-now, button[type="submit"]');
-    if (confirmBtn) await confirmBtn.click();
-
-    console.log('  ⏳ [5/5] Payment initiated! Waiting for OTP confirmation from your phone (up to 3 minutes)...');
+    console.log('  ⏳ [6/6] Payment initiated! Waiting for OTP confirmation from your phone (up to 3 minutes)...');
     await updateOrderStatus(orderCode, 'awaiting_otp');
 
     // Wait for success page (up to 3 minutes for user to confirm OTP)
     try {
-      await page.waitForSelector('.success, .order-success, [class*="success"], .thank-you', { timeout: 180000 });
-      console.log('  ✅ [5/5] Payment confirmed! Free Fire charge successful.');
+      await page.waitForSelector('.success, .order-success, [class*="success"], .thank-you, .status-success', { timeout: 180000 });
+      console.log('  ✅ [6/6] Payment confirmed! Free Fire charge successful.');
       return true;
     } catch {
-      console.error('  ❌ [5/5] Timed out waiting for payment confirmation.');
+      console.error('  ❌ [6/6] Timed out waiting for payment confirmation.');
       return false;
     }
 
