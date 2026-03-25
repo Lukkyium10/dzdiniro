@@ -185,8 +185,16 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     await uidInput.click({ clickCount: 3 });
     await page.keyboard.press('Backspace');
     await uidInput.type(playerId, { delay: 60 });
-    await new Promise(r => setTimeout(r, 2000));
-    console.log('  ✅ [2/5] Player ID entered');
+    await new Promise(r => setTimeout(r, 1000));
+    
+    // Click "تسجيل الدخول" (Submit ID) button
+    console.log('  ➡️ [2/5] Clicking submit ID button...');
+    const submitIdBtn = await page.$('button[type="submit"], button.bg-primary-red:has-text("تسجيل الدخول")');
+    if (submitIdBtn) {
+      await submitIdBtn.click();
+      await new Promise(r => setTimeout(r, 3000)); // wait for packages to load
+    }
+    console.log('  ✅ [2/5] Player ID entered and submitted');
 
     // ── STEP 3: Select the correct package ─────────────────────
     console.log(`  📄 [3/5] Selecting package: ${amount} diamonds...`);
