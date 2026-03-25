@@ -19,19 +19,19 @@ import puppeteer from 'puppeteer';
 // ============================================================
 const CONFIG = {
   // Supabase credentials (use Service Role Key for full DB access)
-  SUPABASE_URL: 'https://dixrpmlkbxbopoebsslk.supabase.co',
-  SUPABASE_SERVICE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpeHJwbWxrYnhib3BvZWJzc2xrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzMwMDEzNSwiZXhwIjoyMDg4ODc2MTM1fQ.KI2DfOjwdgd8E7BMGhFK7VdMTs-9qmdhyZsK_ST3yu0', // ← Replace with your Service Role Key from Supabase > Settings > API
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://dixrpmlkbxbopoebsslk.supabase.co',
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
 
   // Allowed emails for automation (security check)
   AUTOMATED_EMAILS: ['atia7475@gmail.com', 'd.i.d.i.n.e.lke@gmail.com'],
 
   // Free Fire — Shop2Game credentials
-  FREEFIRE_SHOP2GAME_EMAIL: 'd.i.d.i.n.e.lke@gmail.com', // ← Replace
-  FREEFIRE_SHOP2GAME_PASSWORD: 'newway00K*', // ← Replace
+  FREEFIRE_SHOP2GAME_EMAIL: process.env.FREEFIRE_SHOP2GAME_EMAIL || '',
+  FREEFIRE_SHOP2GAME_PASSWORD: process.env.FREEFIRE_SHOP2GAME_PASSWORD || '',
 
   // PUBG — Midasbuy credentials
-  PUBG_MIDASBUY_EMAIL: 'd.i.d.i.n.e.lke@gmail.com', // ← Replace
-  PUBG_MIDASBUY_PASSWORD: 'SECRET17k', // ← Replace
+  PUBG_MIDASBUY_EMAIL: process.env.PUBG_MIDASBUY_EMAIL || '',
+  PUBG_MIDASBUY_PASSWORD: process.env.PUBG_MIDASBUY_PASSWORD || '',
 
   // Polling interval in milliseconds (30 seconds)
   POLL_INTERVAL_MS: 30000,
