@@ -341,23 +341,45 @@ async function chargePUBG(playerId, amount, orderCode) {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
 
     // ── STEP 1: Login to Midasbuy ──────────────────────────────
-    console.log('  📄 [1/5] Opening Midasbuy login page...');
-    await page.goto('https://www.midasbuy.com/midasbuy/dz/sign-in', { waitUntil: 'networkidle2', timeout: 60000 });
-
-    // Fill email input
-    await page.waitForSelector('input[type="email"], input[name="email"], #email, input[placeholder*="mail"]', { timeout: 15000 });
-    await page.type('input[type="email"], input[name="email"], #email, input[placeholder*="mail"]', CONFIG.PUBG_MIDASBUY_EMAIL, { delay: 60 });
-
-    // Fill password input
-    await page.type('input[type="password"]', CONFIG.PUBG_MIDASBUY_PASSWORD, { delay: 60 });
-
-    // Submit
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
-      page.click('button[type="submit"], .sign-in-btn, .login-btn'),
-    ]);
-    console.log('  ✅ [1/5] Logged in to Midasbuy');
+    console.log('  📄 [1/5] Opening Midasbuy PUBG page...');
+    await page.goto('https://www.midasbuy.com/midasbuy/dz/buy/pubgm', { waitUntil: 'networkidle2', timeout: 60000 });
     await new Promise(r => setTimeout(r, 3000));
+
+    // Click the "تسجيل الدخول" button in the top nav to open dropdown
+    console.log('  🔐 [1/5] Clicking login button...');
+    await page.waitForSelector('.DropNavBox_btn_wrap__ZJEku', { timeout: 15000 });
+    await page.click('.DropNavBox_btn_wrap__ZJEku');
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Click "تسجيل الدخول/الاشتراك بوسائل أخرى" (Other sign-in methods)
+    console.log('  🔐 [1/5] Clicking "other sign-in methods"...');
+    await page.waitForSelector('.to-other-login', { timeout: 10000 });
+    await page.click('.to-other-login');
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Fill email in the modal
+    console.log('  📧 [1/5] Entering email...');
+    await page.waitForSelector('p.inp input[type="email"]', { timeout: 15000 });
+    await page.click('p.inp input[type="email"]', { clickCount: 3 });
+    await page.type('p.inp input[type="email"]', CONFIG.PUBG_MIDASBUY_EMAIL, { delay: 60 });
+
+    // Click "يكمل" (Continue) button
+    console.log('  ➡️ [1/5] Clicking Continue...');
+    await page.waitForSelector('.comfirm-btn', { timeout: 10000 });
+    await page.click('.comfirm-btn');
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Fill password
+    console.log('  🔑 [1/5] Entering password...');
+    await page.waitForSelector('.input-box input[type="password"]', { timeout: 15000 });
+    await page.click('.input-box input[type="password"]', { clickCount: 3 });
+    await page.type('.input-box input[type="password"]', CONFIG.PUBG_MIDASBUY_PASSWORD, { delay: 60 });
+
+    // Click "يكمل" again to confirm login
+    await new Promise(r => setTimeout(r, 500));
+    await page.click('.comfirm-btn');
+    await new Promise(r => setTimeout(r, 4000));
+    console.log('  ✅ [1/5] Logged in to Midasbuy');
 
     // ── STEP 2: Go to PUBG Mobile top-up page ─────────────────
     console.log('  📄 [2/5] Navigating to PUBG top-up page...');
@@ -401,28 +423,30 @@ async function chargePUBG(playerId, amount, orderCode) {
     // ── STEP 5: Pay with saved card ────────────────────────────
     console.log('  📄 [5/5] Initiating payment with saved card...');
 
-    // Click Buy Now
-    await page.waitForSelector('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]', { timeout: 10000 });
+    // Click Buy Now (Pay button in the modal)
+    const payBtnSelector = '.PayPriceDetailPc_payButtonContainer__AIedU button, .buy-btn, [class*="payButton"]';
+    await page.waitForSelector(payBtnSelector, { timeout: 10000 });
 
     if (CONFIG.DRY_RUN) {
       console.log('  🧪 [DRY RUN] Would click Pay button here — skipping real payment.');
       console.log('  🧪 [DRY RUN] Set DRY_RUN=false in Railway Variables to enable real payments.');
-      return false;
+      return false; // Safely return false and stop here
     }
 
-    await page.click('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]');
+    // This section only runs if DRY_RUN = false
+    await page.click(payBtnSelector);
     await new Promise(r => setTimeout(r, 3000));
 
-    // Select saved card payment method
+    // Select saved card payment method (if needed)
     const savedCard = await page.$('.saved-card, .my-card, [class*="savedCard"], [class*="credit"]');
     if (savedCard) {
       await savedCard.click();
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    // Click Pay/Confirm
-    const payBtn = await page.$('.pay-now, .confirm-pay, .checkout-btn, button[type="submit"]');
-    if (payBtn) await payBtn.click();
+    // Click Final Confirm if another popup appears
+    const finalConfirmBtn = await page.$('.pay-now, .confirm-pay, .checkout-btn, button[type="submit"]');
+    if (finalConfirmBtn) await finalConfirmBtn.click();
 
     console.log('  ⏳ [5/5] Payment initiated! Waiting for OTP confirmation (up to 3 minutes)...');
     await updateOrderStatus(orderCode, 'awaiting_otp');
