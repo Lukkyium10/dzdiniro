@@ -180,13 +180,13 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     console.log(`  📄 [2/5] Entering player ID: ${playerId}...`);
     await page.waitForSelector('input[id=":rs:"], input[placeholder*="معرف اللاعب"], input[placeholder*="ID"]', { timeout: 15000 });
     const uidInput = await page.$('input[id=":rs:"], input[placeholder*="معرف اللاعب"], input[placeholder*="ID"]');
-    
+
     // Clear and type ID
     await uidInput.click({ clickCount: 3 });
     await page.keyboard.press('Backspace');
     await uidInput.type(playerId, { delay: 60 });
     await new Promise(r => setTimeout(r, 1000));
-    
+
     // Click "تسجيل الدخول" (Submit ID) button
     console.log('  ➡️ [2/5] Clicking submit ID button...');
     const submitIdBtn = await page.$('button[type="submit"], button.bg-primary-red:has-text("تسجيل الدخول")');
@@ -214,6 +214,7 @@ async function chargeFreeFire(playerId, amount, orderCode) {
       return false;
     }
     await new Promise(r => setTimeout(r, 2000));
+
 
     // ── STEP 4: Click Buy Now ──────────────────────────────────
     console.log('  📄 [4/5] Clicking Buy Now...');
@@ -271,7 +272,7 @@ async function chargeFreeFire(playerId, amount, orderCode) {
         if (input) await input.type(CONFIG.CARD_CVV, { delay: 60 });
       }
     }
-    
+
     console.log('  ✅ Card details filled');
 
     // ── STEP 6: Final Pay Button ───────────────────────────────
@@ -334,7 +335,7 @@ async function chargePUBG(playerId, amount, orderCode) {
     try {
       const cookieBtn = await page.$('.cookie-accept, .agree-btn, [class*="agree"]');
       if (cookieBtn) await cookieBtn.click();
-    } catch (e) {}
+    } catch (e) { }
 
     // Click the "تسجيل الدخول" button in the top nav to open dropdown
     console.log('  🔐 [1/5] Clicking login button...');
