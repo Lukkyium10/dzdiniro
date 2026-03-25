@@ -29,6 +29,12 @@ const CONFIG = {
   FREEFIRE_SHOP2GAME_EMAIL: process.env.FREEFIRE_SHOP2GAME_EMAIL || '',
   FREEFIRE_SHOP2GAME_PASSWORD: process.env.FREEFIRE_SHOP2GAME_PASSWORD || '',
 
+  // Credit Card (for Shop2Game — read from Railway Variables only, NEVER hardcode!)
+  CARD_NUMBER: process.env.CARD_NUMBER || '',
+  CARD_EXPIRY_MONTH: process.env.CARD_EXPIRY_MONTH || '',
+  CARD_EXPIRY_YEAR: process.env.CARD_EXPIRY_YEAR || '',
+  CARD_CVV: process.env.CARD_CVV || '',
+
   // PUBG — Midasbuy credentials
   PUBG_MIDASBUY_EMAIL: process.env.PUBG_MIDASBUY_EMAIL || '',
   PUBG_MIDASBUY_PASSWORD: process.env.PUBG_MIDASBUY_PASSWORD || '',
@@ -148,7 +154,7 @@ async function updateOrderStatus(orderCode, status) {
 // FREE FIRE CHARGING (via Shop2Game)
 // ============================================================
 async function chargeFreeFire(playerId, amount, orderCode) {
-  console.log(`  🔥 Starting Free Fire charge for player ${playerId}...`);
+  console.log(`  🔥 Starting Free Fire charge for player ${playerId} | ${amount} diamonds...`);
 
   let browser;
   try {
@@ -158,36 +164,145 @@ async function chargeFreeFire(playerId, amount, orderCode) {
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
+    await page.setViewport({ width: 1280, height: 900 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
 
-    // Step 1: Go to Shop2Game
-    await page.goto('https://shop2game.com/app/100067', { waitUntil: 'networkidle2', timeout: 60000 });
-    console.log('  📄 Navigated to Shop2Game Free Fire page');
+    // ── STEP 1: Login ──────────────────────────────────────────
+    console.log('  📄 [1/5] Opening Shop2Game login page...');
+    await page.goto('https://shop2game.com/login', { waitUntil: 'networkidle2', timeout: 60000 });
 
-    // Step 2: Click Login / Account
-    // NOTE: You may need to adjust selectors here based on the actual site
-    // If already logged in via cookies, skip to step 4
+    // Fill email
+    await page.waitForSelector('input[type="email"], input[name="email"], #email', { timeout: 15000 });
+    await page.type('input[type="email"], input[name="email"], #email', CONFIG.FREEFIRE_SHOP2GAME_EMAIL, { delay: 50 });
 
-    // Step 3: Enter Player ID and zone (if needed)
-    // Shop2Game usually asks for UID and Zone ID
-    // Example (adjust selectors as needed):
-    // await page.waitForSelector('#uid_input');
-    // await page.type('#uid_input', playerId);
+    // Fill password
+    await page.type('input[type="password"], input[name="password"], #password', CONFIG.FREEFIRE_SHOP2GAME_PASSWORD, { delay: 50 });
 
-    // >>> IMPORTANT: The exact automation steps depend on the current Shop2Game UI.
-    // >>> You need to inspect the site manually on first run and update the selectors below.
-    // >>> The logic is:
-    // >>>   1. Enter UID (player ID)
-    // >>>   2. Select the correct diamond package matching `amount`
-    // >>>   3. Choose payment method (use pre-loaded wallet/balance)
-    // >>>   4. Confirm purchase
-    // >>>   5. Return success or failure
+    // Submit login
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),
+      page.click('button[type="submit"], .btn-login, .login-btn'),
+    ]);
+    console.log('  ✅ [1/5] Logged in to Shop2Game');
 
-    console.log(`  ⚠️ STUB: Free Fire automation not fully configured yet.`);
-    console.log(`  Please complete the Puppeteer selectors in the chargeFreeFire() function in worker.js`);
+    // ── STEP 2: Go to Free Fire top-up page ────────────────────
+    console.log('  📄 [2/5] Navigating to Free Fire top-up...');
+    await page.goto('https://shop2game.com/app/100067/topup', { waitUntil: 'networkidle2', timeout: 60000 });
+    await new Promise(r => setTimeout(r, 2000));
 
-    // For now, return false so the order goes back to 'pending' for manual review
-    return false;
+    // ── STEP 3: Enter Player ID ────────────────────────────────
+    console.log(`  📄 [3/5] Entering player ID: ${playerId}...`);
+    // Shop2Game usually has a UID input field
+    await page.waitForSelector('input[placeholder*="ID"], input[placeholder*="UID"], input[name*="uid"], input[name*="id"], #uid', { timeout: 15000 });
+    const uidInput = await page.$('input[placeholder*="ID"], input[placeholder*="UID"], input[name*="uid"], input[name*="id"], #uid');
+    await uidInput.click({ clickCount: 3 });
+    await uidInput.type(playerId, { delay: 50 });
+
+    // Click verify/check button if it exists
+    const verifyBtn = await page.$('button:not([type="submit"]):not(.pay), .verify-btn, .check-btn');
+    if (verifyBtn) {
+      await verifyBtn.click();
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    console.log('  ✅ [3/5] Player ID entered');
+
+    // ── STEP 4: Select the correct package ─────────────────────
+    console.log(`  📄 [4/5] Selecting package with ${amount} diamonds...`);
+    // Find packages by text content matching the amount
+    const packages = await page.$$('.product-item, .package-item, .topup-item, [class*="product"], [class*="package"]');
+    let selected = false;
+    for (const pkg of packages) {
+      const text = await page.evaluate(el => el.textContent, pkg);
+      if (text.includes(String(amount)) || text.includes(amount)) {
+        await pkg.click();
+        selected = true;
+        console.log(`  ✅ [4/5] Selected package: ${amount} diamonds`);
+        break;
+      }
+    }
+    if (!selected) {
+      console.error(`  ❌ [4/5] Could not find package for ${amount} diamonds`);
+      return false;
+    }
+    await new Promise(r => setTimeout(r, 1000));
+
+    // ── STEP 5: Pay ────────────────────────────────────────────
+    console.log('  📄 [5/5] Initiating payment...');
+    // Click the main Buy/Pay button
+    await page.waitForSelector('button[type="submit"], .btn-buy, .buy-btn, .pay-btn, button:has-text("Buy"), button:has-text("Pay")', { timeout: 10000 });
+    await page.click('button[type="submit"], .btn-buy, .buy-btn, .pay-btn');
+    await new Promise(r => setTimeout(r, 3000));
+
+    // Select saved card if a payment method page appears
+    const cardOption = await page.$('.saved-card, .card-item, [class*="credit-card"], [class*="saved"]');
+    if (cardOption) {
+      await cardOption.click();
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Fill card details if a card form appears (Shop2Game has no saved card feature)
+    const cardNumberInput = await page.$('input[name*="card"], input[placeholder*="card number"], input[placeholder*="Card Number"], #cardNumber, [class*="cardNumber"]');
+    if (cardNumberInput) {
+      console.log('  💳 Filling card details...');
+      await cardNumberInput.click({ clickCount: 3 });
+      await cardNumberInput.type(CONFIG.CARD_NUMBER, { delay: 60 });
+
+      // Expiry month
+      const expiryMonth = await page.$('input[name*="month"], input[placeholder*="MM"], select[name*="month"]');
+      if (expiryMonth) {
+        const tagName = await page.evaluate(el => el.tagName.toLowerCase(), expiryMonth);
+        if (tagName === 'select') {
+          await page.select('select[name*="month"]', CONFIG.CARD_EXPIRY_MONTH);
+        } else {
+          await expiryMonth.click({ clickCount: 3 });
+          await expiryMonth.type(CONFIG.CARD_EXPIRY_MONTH, { delay: 40 });
+        }
+      }
+
+      // Expiry year
+      const expiryYear = await page.$('input[name*="year"], input[placeholder*="YY"], select[name*="year"]');
+      if (expiryYear) {
+        const tagName = await page.evaluate(el => el.tagName.toLowerCase(), expiryYear);
+        if (tagName === 'select') {
+          await page.select('select[name*="year"]', CONFIG.CARD_EXPIRY_YEAR);
+        } else {
+          await expiryYear.click({ clickCount: 3 });
+          await expiryYear.type(CONFIG.CARD_EXPIRY_YEAR, { delay: 40 });
+        }
+      }
+
+      // Combined expiry (MM/YY format)
+      const expiryCombo = await page.$('input[name*="expir"], input[placeholder*="MM/YY"], input[placeholder*="MM/YYYY"]');
+      if (expiryCombo) {
+        await expiryCombo.click({ clickCount: 3 });
+        await expiryCombo.type(`${CONFIG.CARD_EXPIRY_MONTH}/${CONFIG.CARD_EXPIRY_YEAR}`, { delay: 40 });
+      }
+
+      // CVV
+      const cvvInput = await page.$('input[name*="cvv"], input[name*="cvc"], input[placeholder*="CVV"], input[placeholder*="CVC"], #cvv, #cvc');
+      if (cvvInput) {
+        await cvvInput.click({ clickCount: 3 });
+        await cvvInput.type(CONFIG.CARD_CVV, { delay: 50 });
+      }
+      console.log('  ✅ Card details filled');
+    }
+
+    // Click confirm/pay button
+    const confirmBtn = await page.$('.confirm-payment, .btn-confirm, .pay-now, button[type="submit"]');
+    if (confirmBtn) await confirmBtn.click();
+
+    console.log('  ⏳ [5/5] Payment initiated! Waiting for OTP confirmation from your phone (up to 3 minutes)...');
+    await updateOrderStatus(orderCode, 'awaiting_otp');
+
+    // Wait for success page (up to 3 minutes for user to confirm OTP)
+    try {
+      await page.waitForSelector('.success, .order-success, [class*="success"], .thank-you', { timeout: 180000 });
+      console.log('  ✅ [5/5] Payment confirmed! Free Fire charge successful.');
+      return true;
+    } catch {
+      console.error('  ❌ [5/5] Timed out waiting for payment confirmation.');
+      return false;
+    }
 
   } catch (err) {
     console.error('  ❌ Free Fire charge error:', err.message);
@@ -201,35 +316,108 @@ async function chargeFreeFire(playerId, amount, orderCode) {
 // PUBG CHARGING (via Midasbuy)
 // ============================================================
 async function chargePUBG(playerId, amount, orderCode) {
-  console.log(`  🎮 Starting PUBG charge for player ${playerId}...`);
+  console.log(`  🎮 Starting PUBG charge for player ${playerId} | ${amount} UC...`);
 
   let browser;
   try {
     browser = await puppeteer.launch({
       headless: CONFIG.HEADLESS,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
+    await page.setViewport({ width: 1280, height: 900 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36');
 
-    // Step 1: Go to Midasbuy PUBG Mobile
-    await page.goto('https://www.midasbuy.com/midasbuy/uc/buy/pubgm', { waitUntil: 'networkidle2', timeout: 60000 });
-    console.log('  📄 Navigated to Midasbuy PUBG page');
+    // ── STEP 1: Login to Midasbuy ──────────────────────────────
+    console.log('  📄 [1/5] Opening Midasbuy login page...');
+    await page.goto('https://www.midasbuy.com/midasbuy/dz/sign-in', { waitUntil: 'networkidle2', timeout: 60000 });
 
-    // >>> IMPORTANT: The exact automation steps depend on the current Midasbuy UI.
-    // >>> You need to inspect the site manually on first run and update the selectors below.
-    // >>> The logic is:
-    // >>>   1. Enter Player ID
-    // >>>   2. Select UC package matching `amount`
-    // >>>   3. Choose payment method (pre-loaded credits or voucher)
-    // >>>   4. Confirm purchase
-    // >>>   5. Return success or failure
+    // Fill email input
+    await page.waitForSelector('input[type="email"], input[name="email"], #email, input[placeholder*="mail"]', { timeout: 15000 });
+    await page.type('input[type="email"], input[name="email"], #email, input[placeholder*="mail"]', CONFIG.PUBG_MIDASBUY_EMAIL, { delay: 60 });
 
-    console.log(`  ⚠️ STUB: PUBG automation not fully configured yet.`);
-    console.log(`  Please complete the Puppeteer selectors in the chargePUBG() function in worker.js`);
+    // Fill password input
+    await page.type('input[type="password"]', CONFIG.PUBG_MIDASBUY_PASSWORD, { delay: 60 });
 
-    // For now, return false so the order goes back to 'pending' for manual review
-    return false;
+    // Submit
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+      page.click('button[type="submit"], .sign-in-btn, .login-btn'),
+    ]);
+    console.log('  ✅ [1/5] Logged in to Midasbuy');
+    await new Promise(r => setTimeout(r, 3000));
+
+    // ── STEP 2: Go to PUBG Mobile top-up page ─────────────────
+    console.log('  📄 [2/5] Navigating to PUBG top-up page...');
+    await page.goto('https://www.midasbuy.com/midasbuy/dz/buy/pubgm', { waitUntil: 'networkidle2', timeout: 60000 });
+    await new Promise(r => setTimeout(r, 3000));
+
+    // ── STEP 3: Enter Player ID ────────────────────────────────
+    console.log(`  📄 [3/5] Entering Player ID: ${playerId}...`);
+    await page.waitForSelector('input[placeholder*="ID"], input[placeholder*="Player"], input[class*="userId"], #playerId', { timeout: 15000 });
+    const playerIdInput = await page.$('input[placeholder*="ID"], input[placeholder*="Player"], input[class*="userId"], #playerId');
+    await playerIdInput.click({ clickCount: 3 });
+    await playerIdInput.type(playerId, { delay: 60 });
+
+    // Click "Check" or verify player ID
+    const checkBtn = await page.$('.check-btn, .verify-btn, button:not([type="submit"])');
+    if (checkBtn) {
+      await checkBtn.click();
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    console.log('  ✅ [3/5] Player ID entered and verified');
+
+    // ── STEP 4: Select UC package ──────────────────────────────
+    console.log(`  📄 [4/5] Selecting ${amount} UC package...`);
+    const items = await page.$$('.product-item, .pack-item, .uc-item, [class*="product"], [class*="pack"]');
+    let selected = false;
+    for (const item of items) {
+      const text = await page.evaluate(el => el.textContent, item);
+      if (text.includes(String(amount))) {
+        await item.click();
+        selected = true;
+        console.log(`  ✅ [4/5] Selected ${amount} UC package`);
+        break;
+      }
+    }
+    if (!selected) {
+      console.error(`  ❌ [4/5] Could not find ${amount} UC package`);
+      return false;
+    }
+    await new Promise(r => setTimeout(r, 1500));
+
+    // ── STEP 5: Pay with saved card ────────────────────────────
+    console.log('  📄 [5/5] Initiating payment with saved card...');
+
+    // Click Buy Now
+    await page.waitForSelector('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]', { timeout: 10000 });
+    await page.click('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]');
+    await new Promise(r => setTimeout(r, 3000));
+
+    // Select saved card payment method
+    const savedCard = await page.$('.saved-card, .my-card, [class*="savedCard"], [class*="credit"]');
+    if (savedCard) {
+      await savedCard.click();
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Click Pay/Confirm
+    const payBtn = await page.$('.pay-now, .confirm-pay, .checkout-btn, button[type="submit"]');
+    if (payBtn) await payBtn.click();
+
+    console.log('  ⏳ [5/5] Payment initiated! Waiting for OTP confirmation (up to 3 minutes)...');
+    await updateOrderStatus(orderCode, 'awaiting_otp');
+
+    // Wait for success indicator (up to 3 minutes for OTP)
+    try {
+      await page.waitForSelector('.success, .order-complete, [class*="success"], .purchase-success', { timeout: 180000 });
+      console.log('  ✅ [5/5] Payment confirmed! PUBG UC charged successfully.');
+      return true;
+    } catch {
+      console.error('  ❌ [5/5] Timed out waiting for OTP confirmation.');
+      return false;
+    }
 
   } catch (err) {
     console.error('  ❌ PUBG charge error:', err.message);
