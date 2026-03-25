@@ -44,6 +44,10 @@ const CONFIG = {
 
   // Run browser in headless mode (true = no window, false = show browser)
   HEADLESS: true,
+
+  // DRY RUN mode: goes through all steps but does NOT click Pay (no real charge)
+  // Set to 'false' in Railway Variables when ready for real payments
+  DRY_RUN: process.env.DRY_RUN !== 'false',
 };
 // ============================================================
 
@@ -229,7 +233,14 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     // ── STEP 5: Pay ────────────────────────────────────────────
     console.log('  📄 [5/5] Initiating payment...');
     // Click the main Buy/Pay button
-    await page.waitForSelector('button[type="submit"], .btn-buy, .buy-btn, .pay-btn, button:has-text("Buy"), button:has-text("Pay")', { timeout: 10000 });
+    await page.waitForSelector('button[type="submit"], .btn-buy, .buy-btn, .pay-btn', { timeout: 10000 });
+
+    if (CONFIG.DRY_RUN) {
+      console.log('  🧪 [DRY RUN] Would click Pay button here — skipping real payment.');
+      console.log('  🧪 [DRY RUN] Set DRY_RUN=false in Railway Variables to enable real payments.');
+      return false; // return false so order goes back to pending
+    }
+
     await page.click('button[type="submit"], .btn-buy, .buy-btn, .pay-btn');
     await new Promise(r => setTimeout(r, 3000));
 
@@ -392,6 +403,13 @@ async function chargePUBG(playerId, amount, orderCode) {
 
     // Click Buy Now
     await page.waitForSelector('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]', { timeout: 10000 });
+
+    if (CONFIG.DRY_RUN) {
+      console.log('  🧪 [DRY RUN] Would click Pay button here — skipping real payment.');
+      console.log('  🧪 [DRY RUN] Set DRY_RUN=false in Railway Variables to enable real payments.');
+      return false;
+    }
+
     await page.click('.buy-btn, .pay-btn, button[class*="buy"], button[class*="pay"]');
     await new Promise(r => setTimeout(r, 3000));
 
