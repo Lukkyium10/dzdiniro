@@ -7,6 +7,7 @@
   <title>DzDiniro | لكل المعاملات المالية و الخدماتية الرقمية</title>
   <meta name="description"
     content="DzDiniro - منصتك الأولى للخدمات المالية والرقمية في الجزائر. شحن ألعاب، تحويل أموال، بيع وشراء العملات الرقمية.">
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -31,10 +32,9 @@
       <a href="#games">الألعاب</a>
       <a href="#packages">الباقات</a>
       <a href="#order">الطلب</a>
-      <a href="#" class="how-it-works-link"
-        onclick="document.getElementById('howItWorksModal').classList.add('active'); return false;">💡 كيف يعمل
-        الموقع؟</a>
-      <a href="admin.html" class="admin-link">🔒 <span>لوحة التحكم</span></a>
+      <a href="#" class="how-it-works-link" onclick="document.getElementById('howItWorksModal').classList.add('active'); return false;">💡 كيف يعمل الموقع؟</a>
+      <a href="#" class="auth-nav-btn" id="authNavBtn" onclick="openAuthModal(); return false;">🔐 تسجيل الدخول</a>
+      <a href="admin.html" class="admin-link" id="adminNavLink">🔒 <span>لوحة التحكم</span></a>
     </div>
   </nav>
 
@@ -44,7 +44,7 @@
       <span class="gradient-text">DzDiniro</span><br>
       لكل المعاملات المالية و الخدماتية الرقمية
     </h1>
-    <p>خدمات مالية ورقمية متكاملة — شحن ألعاب، تحويل أموال، بيع وشراء USDT بأمان وسرعة. كل ما تحتاجه في منصة واحدة! 🚀
+    <p>خدمات رقمية متكاملة — شحن ألعاب، ترويج و زيادة المتابعين، تحويل أموال، بيع وشراء USDT بأمان وسرعة. كل ما تحتاجه في منصة واحدة! 🚀
     </p>
   </header>
 
@@ -62,11 +62,6 @@
           <span class="game-icon">🎮</span>
           <div class="game-name" style="font-size: 0.9rem;">شحن الألعاب و التطبيقات</div>
         </div>
-        <div class="game-tab" data-service="money" id="tab-service-money">
-          <span class="check-badge" style="opacity: 0;">✓</span>
-          <span class="game-icon">💸</span>
-          <div class="game-name" style="font-size: 0.9rem;">إرسال/سحب المال</div>
-        </div>
         <div class="game-tab" data-service="dollar" id="tab-service-dollar">
           <span class="check-badge" style="opacity: 0;">✓</span>
           <span class="game-icon">💵</span>
@@ -83,9 +78,14 @@
           <div class="game-name" style="font-size: 0.9rem;">انشاء موقع أو متجر الكتروني احترافي</div>
         </div>
         <div class="game-tab" data-service="igfollowers" id="tab-service-igfollowers">
+          <span class="check-badge" style="opacity: 0; pointer-events: none;">✓</span>
+          <span class="game-icon">📈</span>
+          <div class="game-name" style="font-size: 0.9rem;">زيادة متابعين (FB/TikTok/IG)</div>
+        </div>
+        <div class="game-tab" data-service="money" id="tab-service-money">
           <span class="check-badge" style="opacity: 0;">✓</span>
-          <span class="game-icon">📸</span>
-          <div class="game-name" style="font-size: 0.9rem;">زيادة متابعين Instagram</div>
+          <span class="game-icon">💸</span>
+          <div class="game-name" style="font-size: 0.9rem;">إرسال/سحب المال</div>
         </div>
       </div>
     </section>
@@ -96,24 +96,24 @@
       <section class="game-section fade-in stagger-2" id="gameSelection">
         <div class="section-title">
           <span class="step-num">2</span>
-          <h2>شحن مجوهرات فري فاير أو UC PUBG أو عملات تيكتوك</h2>
+          <h2 id="step2Title">شحن مجوهرات فري فاير أو UC PUBG أو عملات تيكتوك</h2>
         </div>
-        <div class="game-tabs">
+        <div class="game-tabs" id="gameTabsList">
           <div class="game-tab" data-game="freefire" id="tab-freefire">
-            <span class="check-badge">✓</span>
+            <span class="check-badge" style="pointer-events: none;">✓</span>
             <span class="game-icon">🔥</span>
             <div class="game-name">FREE FIRE</div>
             <div class="game-desc">شحن دايموندز فري فاير</div>
           </div>
           <div class="game-tab" data-game="pubg" id="tab-pubg">
-            <span class="check-badge">✓</span>
+            <span class="check-badge" style="pointer-events: none;">✓</span>
             <span class="game-icon"><img src="images/dd.jpg" alt="UC"
                 style="width: 35px; height: 35px; object-fit: contain;"></span>
             <div class="game-name">PUBG MOBILE</div>
             <div class="game-desc">شحن UC ببجي موبايل</div>
           </div>
           <div class="game-tab" data-game="tiktok" id="tab-tiktok">
-            <span class="check-badge">✓</span>
+            <span class="check-badge" style="pointer-events: none;">✓</span>
             <span class="game-icon"><img src="images/tiktok_coin.png" alt="TikTok Coin"
                 style="width: 35px; height: 35px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(251, 191, 36, 0.4));"></span>
             <div class="game-name">TikTok</div>
@@ -132,11 +132,67 @@
           <span class="input-icon" id="playerIdIcon">👤</span>
           <input type="text" id="playerIdInput" placeholder="أدخل معرّف اللاعب (Player ID)" autocomplete="off">
         </div>
+        <div id="playerNameContainer" style="margin-top: 1.2rem;">
+          <label style="display: block; margin-bottom: 0.6rem; color: var(--text-secondary); font-weight: 600;">اسم اللاعب (اختياري)</label>
+          <div class="input-group">
+            <span class="input-icon">👤</span>
+            <input type="text" id="playerNameInput" placeholder="أدخل اسم اللاعب في اللعبة" autocomplete="off">
+          </div>
+        </div>
         <div id="tiktokInstructions"
           style="display: none; color: var(--accent-gold); background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.2); padding: 0.8rem; border-radius: var(--radius-sm); margin-top: 1rem; font-size: 0.85rem; line-height: 1.6;">
           <strong style="display:block; margin-bottom: 0.3rem;">📌 طريقة الشحن:</strong>
           سوف نرسل لك <strong>QR كود</strong> لمسحه للدخول إلى حسابك وشحن العملات التي حددتها.<br>بعد إرسال الطلب،
           <strong>سنتواصل معك عبر الواتسآب</strong> لإتمام عملية شراء العملات.
+        </div>
+      </section>
+    </div>
+
+    <!-- Instagram/Social Followers Flow -->
+    <div id="igFollowersFlowContainer" style="display: none;">
+      <section class="player-id-section fade-in stagger-2" id="igFollowersDetailsSection">
+        <div class="section-title">
+          <span class="step-num">2</span>
+          <h2>🚀 اختر المنصة وأدخل الرابط</h2>
+        </div>
+
+        <!-- Platform Selector for Followers (Framed like service tabs) -->
+        <div class="game-tabs" style="margin-bottom: 2rem;">
+          <div class="game-tab platform-btn active" data-platform="instagram" style="flex: 1;">
+            <span class="check-badge" style="pointer-events: none;">✓</span>
+            <span class="game-icon">📸</span>
+            <div class="game-name">Instagram</div>
+          </div>
+          <div class="game-tab platform-btn" data-platform="tiktok" style="flex: 1;">
+            <span class="check-badge" style="pointer-events: none; opacity: 0;">✓</span>
+            <span class="game-icon">📱</span>
+            <div class="game-name">TikTok</div>
+          </div>
+          <div class="game-tab platform-btn" data-platform="facebook" style="flex: 1;">
+            <span class="check-badge" style="pointer-events: none; opacity: 0;">✓</span>
+            <span class="game-icon">👥</span>
+            <div class="game-name">Facebook</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.2rem;">
+          <label style="display: block; margin-bottom: 0.6rem; color: var(--text-secondary); font-weight: 600;" id="followersAccountLabel">رابط الحساب <span style="color:var(--accent-red)">*</span></label>
+          <div class="input-group">
+            <span class="input-icon" id="followersAccountIcon">📸</span>
+            <input type="text" id="igFollowersUsernameInput" placeholder="أدخل رابط الحساب هنا..."
+              autocomplete="off">
+          </div>
+        </div>
+
+        <div class="payment-info" id="followersNotes"
+          style="margin-top: 1rem; background: rgba(59, 130, 246, 0.06); border-color: rgba(59, 130, 246, 0.2);">
+          <h3 style="color: var(--accent-blue);">📌 ملاحظات مهمة</h3>
+          <ul
+            style="color: var(--text-secondary); line-height: 2; padding-right: 1.2rem; margin-top: 0.5rem; font-size: 0.9rem;">
+            <li>تأكد من أن الحساب <strong>عام (Public)</strong> وليس خاصاً</li>
+            <li>المتابعين حقيقيين وسيتم إضافتهم تدريجياً لضمان الأمان</li>
+            <li>مدة التنفيذ: من <strong>ساعة إلى 24 ساعة</strong> كحد أقصى</li>
+          </ul>
         </div>
       </section>
     </div>
@@ -396,15 +452,26 @@
           </div>
         </div>
 
-        <div class="payment-info" style="margin-top: 1.5rem;">
-          <h3>💳 أرسل المبلغ عبر بريدي موب</h3>
-          <p>قم بتحويل المبلغ الإجمالي بالدينار إلى حساب بريدي موب التالي، ثم ارفع إثبات الدفع:</p>
-          <div
-            style="margin-top: 1rem; padding: 1rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--radius-sm); text-align: center;">
-            <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.3rem;">RIP بريدي موب</div>
+        <div id="dollarBuyBinanceGroup" style="margin-top: 1.5rem; display: none;">
+          <label style="display: block; margin-bottom: 0.6rem; color: var(--text-secondary); font-weight: 600;">Binance ID أو عنوان الشبكة BNB Smart Chain (BEP20) <span style="color:var(--accent-red)">*</span></label>
+          <div class="input-group">
+            <span class="input-icon">🆔</span>
+            <input type="text" id="dollarBuyBinanceId" placeholder="أدخل Binance ID أو عنوان BEP20 الخاص بك" autocomplete="off">
+          </div>
+          <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">سنقوم بإرسال الـ USDT إلى هذا الحساب فور تأكيد الدفع.</p>
+        </div>
+
+        <div id="dollarBuyBaridiMobInfo">
+          <div class="payment-info" style="margin-top: 1.5rem;">
+            <h3>💳 أرسل المبلغ عبر بريدي موب</h3>
+            <p>قم بتحويل المبلغ الإجمالي بالدينار إلى حساب بريدي موب التالي، ثم ارفع إثبات الدفع:</p>
             <div
-              style="direction:ltr; font-family:'Orbitron',sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--accent-cyan); letter-spacing: 2px;">
-              002566186616</div>
+              style="margin-top: 1rem; padding: 1rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--radius-sm); text-align: center;">
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.3rem;">RIP بريدي موب</div>
+              <div
+                style="direction:ltr; font-family:'Orbitron',sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--accent-cyan); letter-spacing: 2px;">
+                002566186616</div>
+            </div>
           </div>
         </div>
       </section>
@@ -689,6 +756,10 @@
             <span class="label">معرّف اللاعب</span>
             <span class="value" id="summaryPlayerId">—</span>
           </div>
+          <div class="summary-row" id="summaryPlayerNameRow" style="display: none;">
+            <span class="label">اسم اللاعب</span>
+            <span class="value" id="summaryPlayerName">—</span>
+          </div>
           <div class="summary-row">
             <span class="label">الباقة</span>
             <span class="value" id="summaryPackage">—</span>
@@ -700,25 +771,34 @@
         </div>
 
         <div class="payment-methods">
-          <div class="payment-method-card active" data-method="baridimob"
+          <div class="payment-method-card active" data-method="cash"
             style="padding: 1.5rem 1rem; text-align: center; background: var(--bg-card); border: 2px solid var(--accent-blue); box-shadow: var(--shadow-glow-blue); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; position: relative;">
             <span class="check-badge"
               style="position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: var(--accent-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; opacity: 1; pointer-events: none;">✓</span>
-            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">💳</div>
-            <div style="font-weight: 700; font-family: 'Orbitron', sans-serif;">Bril Mob</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">تحويل بنكي</div>
-          </div>
-          <div class="payment-method-card" data-method="cash"
-            style="padding: 1.5rem 1rem; text-align: center; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; position: relative;">
-            <span class="check-badge"
-              style="position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: var(--accent-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; opacity: 0; pointer-events: none;">✓</span>
             <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">💵</div>
             <div style="font-weight: 700; font-family: 'Orbitron', sans-serif;">نقداً (Cash)</div>
             <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">الدفع يداً بـ يد</div>
           </div>
+          <div class="payment-method-card" data-method="slickpay"
+            style="padding: 1.5rem 1rem; text-align: center; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; position: relative;">
+            <span class="check-badge"
+              style="position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: var(--accent-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; opacity: 0; pointer-events: none;">✓</span>
+            <span style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg,#10b981,#059669); color:white; font-size:0.65rem; border-radius:20px; padding:2px 8px; font-weight:700;">⚡ فوري</span>
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🏦</div>
+            <div style="font-weight: 700; font-family: 'Orbitron', sans-serif; font-size:0.85rem;">CIB / Dahabia</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Slick-Pay آلي</div>
+          </div>
+          <div class="payment-method-card" data-method="baridimob"
+            style="padding: 1.5rem 1rem; text-align: center; background: var(--bg-card); border: 2px solid var(--border-glass); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; position: relative;">
+            <span class="check-badge"
+              style="position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: var(--accent-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; opacity: 0; pointer-events: none;">✓</span>
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">💳</div>
+            <div style="font-weight: 700; font-family: 'Orbitron', sans-serif;">Bril Mob</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">تحويل بنكي</div>
+          </div>
         </div>
 
-        <div class="payment-info" id="baridiMobInfo">
+        <div class="payment-info" id="baridiMobInfo" style="display: none;">
           <h3>💳 الدفع عبر بريدي موب</h3>
           <p>
             قم بتحويل المبلغ إلى الحساب التالي عبر تطبيق <strong>Baridi Mob</strong>، ثم ارفع صورة الإثبات في الخطوة
@@ -734,7 +814,7 @@
         </div>
 
         <div class="payment-info" id="cashInfo"
-          style="display: none; background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2);">
+          style="display: block; background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2);">
           <h3 style="color: var(--accent-green);">💵 الدفع نقداً (Cash)</h3>
           <p id="cashInfoDesc">
             لقد اخترت الدفع يداً بـ يد. يرجى الاتصال بنا عبر الهاتف أو الواتسآب لتحديد مكان اللقاء وتسليم المبلغ ليتم
@@ -752,7 +832,7 @@
     </section>
 
     <!-- Step 5: Upload Payment Proof (Only for Baridi Mob) -->
-    <section class="order-section fade-in stagger-5" id="proofSection">
+    <section class="order-section fade-in stagger-5" id="proofSection" style="display: none;">
       <div class="section-title">
         <span class="step-num" id="step5Num">5</span>
         <h2 id="step5Title">أرسل إثبات الدفع</h2>
@@ -784,6 +864,11 @@
       <button class="btn-submit" id="btnSubmit" disabled>
         <span class="btn-shimmer"></span>
         تأكيد الطلب و إرسال ✨
+      </button>
+      <button class="btn-submit" id="btnSubmitAutomated" disabled
+        style="display:none; margin-top:1rem; background: linear-gradient(135deg, #7c3aed, #4f46e5); box-shadow: 0 0 20px rgba(124,58,237,0.4);">
+        <span class="btn-shimmer"></span>
+        ⚡ إرسال طلب مأكد (Automated)
       </button>
     </section>
   </main>
@@ -850,7 +935,196 @@
     </div>
   </div>
 
+  <!-- Auth Modal (Login / Register) -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal" style="max-width: 480px; padding: 2.5rem;">
+      <!-- Login Form -->
+      <div id="loginFormContainer">
+        <div style="text-align:center; margin-bottom: 2rem;">
+          <span style="font-size: 2.5rem; display:block; margin-bottom:0.5rem;">🔐</span>
+          <h2 style="font-size: 1.5rem; font-weight: 700;">تسجيل الدخول</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top:0.3rem;">ادخل إلى حسابك لتتبع طلباتك</p>
+        </div>
+        <form id="loginForm" style="display:flex; flex-direction:column; gap:1rem;">
+          <div class="input-group">
+            <span class="input-icon">📧</span>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required autocomplete="email">
+          </div>
+          <div class="input-group">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="loginPassword" placeholder="كلمة المرور" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-submit" style="margin-top:0.5rem;">تسجيل الدخول</button>
+        </form>
+        <p style="text-align:center; margin-top:1.5rem; color:var(--text-secondary); font-size:0.9rem;">ليس لديك حساب؟ <a href="#" style="color:var(--accent-blue); font-weight:700; text-decoration:none;" onclick="openAuthModal('register'); return false;">إنشاء حساب جديد</a></p>
+        
+        <div class="auth-divider">
+          <span>أو المتابعة باستخدام</span>
+        </div>
+        <div class="social-login-container">
+          <button type="button" class="btn-social btn-google" onclick="authSignInWithGoogle()">
+            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Google
+          </button>
+        </div>
+      </div>
+      <!-- Register Form -->
+      <div id="registerFormContainer" style="display:none;">
+        <div style="text-align:center; margin-bottom: 2rem;">
+          <span style="font-size: 2.5rem; display:block; margin-bottom:0.5rem;">✨</span>
+          <h2 style="font-size: 1.5rem; font-weight: 700;">إنشاء حساب</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top:0.3rem;">سجّل الآن لتتبع طلباتك واربح من الإحالة!</p>
+        </div>
+        <form id="registerForm" style="display:flex; flex-direction:column; gap:1rem;">
+          <div class="input-group">
+            <span class="input-icon">👤</span>
+            <input type="text" id="regFullName" placeholder="الاسم الكامل" required autocomplete="name">
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📱</span>
+            <input type="tel" id="regPhone" placeholder="رقم الهاتف (0555...)" required autocomplete="tel">
+          </div>
+          <div class="input-group">
+            <span class="input-icon">📧</span>
+            <input type="email" id="regEmail" placeholder="البريد الإلكتروني" required autocomplete="email">
+          </div>
+          <div class="input-group">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="regPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" required minlength="6" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn-submit" style="margin-top:0.5rem;">إنشاء حساب</button>
+        </form>
+        <p style="text-align:center; margin-top:1.5rem; color:var(--text-secondary); font-size:0.9rem;">لديك حساب؟ <a href="#" style="color:var(--accent-blue); font-weight:700; text-decoration:none;" onclick="openAuthModal('login'); return false;">تسجيل الدخول</a></p>
+        
+        <div class="auth-divider">
+          <span>أو المتابعة باستخدام</span>
+        </div>
+        <div class="social-login-container">
+          <button type="button" class="btn-social btn-google" onclick="authSignInWithGoogle()">
+            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Google
+          </button>
+        </div>
+      </div>
+      <button class="btn-close-modal" style="margin-top:1.5rem; width:100%;" onclick="closeAuthModal()">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- Account Dashboard Modal -->
+  <div id="accountModal" class="modal-overlay">
+    <div class="modal" style="max-width: 700px; padding: 2rem; max-height: 90vh; overflow-y: auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 700;">👤 حسابي</h2>
+        <button class="btn-close-modal" onclick="closeAccountModal()" style="padding:0.4rem 1rem;">✕</button>
+      </div>
+      <!-- Account Info Bar -->
+      <div class="account-info-bar">
+        <div><span style="color:var(--text-muted);">الاسم:</span> <strong id="accountName">—</strong></div>
+        <div><span style="color:var(--text-muted);">البريد:</span> <strong id="accountEmail">—</strong></div>
+        <div><span style="color:var(--text-muted);">الهاتف:</span> <strong id="accountPhone">—</strong></div>
+      </div>
+      <!-- Tabs -->
+      <div class="account-tabs">
+        <button class="account-tab-btn active" data-tab="orders" onclick="switchAccountTab('orders')">📦 طلباتي</button>
+        <button class="account-tab-btn" data-tab="referral" onclick="switchAccountTab('referral')">🤝 الإحالة</button>
+        <button class="account-tab-btn" data-tab="admin" id="adminTabBtn" style="display:none;" onclick="switchAccountTab('admin')">🔒 الإدارة</button>
+      </div>
+      <!-- Orders Tab -->
+      <div class="account-tab-content active" id="tab-orders">
+        <div id="ordersListContainer">
+          <p style="text-align:center; color:var(--text-muted); padding:2rem;">جاري التحميل... ⏳</p>
+        </div>
+      </div>
+      <!-- Referral Tab -->
+      <div class="account-tab-content" id="tab-referral">
+        <div class="referral-card">
+          <div class="referral-card-header">
+            <span style="font-size:2rem;">🎁</span>
+            <div>
+              <h3 style="font-size:1.1rem;">برنامج الإحالة</h3>
+              <p style="color:var(--text-muted); font-size:0.85rem;">احصل على 5% من كل عملية شراء عبر رابطك!</p>
+            </div>
+          </div>
+          <div class="referral-stats">
+            <div class="referral-stat">
+              <div class="referral-stat-value" id="referralBalance" style="color:var(--accent-green);">0 دج</div>
+              <div class="referral-stat-label">رصيد الأرباح</div>
+            </div>
+            <div class="referral-stat">
+              <div class="referral-stat-value" id="referralCount">0</div>
+              <div class="referral-stat-label">عدد الإحالات</div>
+            </div>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <label style="display:block; margin-bottom:0.5rem; color:var(--text-secondary); font-weight:600; font-size:0.9rem;">كود الإحالة الخاص بك</label>
+            <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:var(--radius-sm); padding:0.8rem; text-align:center; font-family:'Orbitron',sans-serif; font-size:1.3rem; font-weight:700; letter-spacing:2px; color:var(--accent-blue);" id="myReferralCode">—</div>
+          </div>
+          <div style="margin-top:1rem;">
+            <label style="display:block; margin-bottom:0.5rem; color:var(--text-secondary); font-weight:600; font-size:0.9rem;">رابط الإحالة</label>
+            <div style="display:flex; gap:0.5rem;">
+              <input type="text" id="myReferralLink" readonly style="flex:1; padding:0.7rem; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; direction:ltr;">
+              <button class="btn-submit" style="padding:0.7rem 1.2rem; width:auto; font-size:0.85rem;" onclick="copyReferralLink()">📋 نسخ</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;">
+          <h4 style="margin-bottom:0.8rem; font-size:1rem;">💰 سجل الأرباح</h4>
+          <div id="referralEarningsList" class="referral-earnings-list">
+            <p style="text-align:center; color:var(--text-muted); padding:1.5rem; font-size:0.9rem;">جاري التحميل...</p>
+          </div>
+        </div>
+      </div>
+      <!-- Admin Tab -->
+      <div class="account-tab-content" id="tab-admin">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <h3 style="font-size:1.1rem; border-right:3px solid var(--accent-blue); padding-right:10px;">🛡️ إدارة الطلبات</h3>
+          <div style="display:flex; gap:0.5rem;">
+             <button class="action-btn-mini info" onclick="loadAdminOrdersTab(true)" style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem;">🔄 تحديث</button>
+             <button class="action-btn-mini danger" onclick="clearAllOrders()" style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem;">🗑️ حذف الكل</button>
+          </div>
+        </div>
+        <div class="admin-filters-mini" style="display:flex; gap:0.5rem; margin-bottom:1.2rem; overflow-x:auto; padding-bottom:0.5rem;">
+          <button class="filter-btn-mini active" onclick="filterAdminOrders('all', this)">الكل</button>
+          <button class="filter-btn-mini" onclick="filterAdminOrders('pending', this)">⏳ الانتظار</button>
+          <button class="filter-btn-mini" onclick="filterAdminOrders('completed', this)">✅ مكتملة</button>
+          <button class="filter-btn-mini" onclick="filterAdminOrders('cancelled', this)">❌ ملغاة</button>
+        </div>
+        <div id="adminOrdersContainer">
+          <p style="text-align:center; color:var(--text-muted); padding:2rem;">جاري التحميل... ⏳</p>
+        </div>
+      </div>
+      <!-- Logout -->
+      <button class="btn-submit" style="margin-top:1.5rem; background:linear-gradient(135deg, #ef4444, #dc2626);" onclick="authSignOut(); closeAccountModal();">🚪 تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <!-- WhatsApp Floating Widget -->
+  <div id="whatsappWidget" class="whatsapp-wrapper">
+    <button class="whatsapp-close" id="closeWhatsApp" aria-label="Close WhatsApp Button">×</button>
+    <a href="https://wa.me/213655292293" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+      <div class="whatsapp-content">
+        <span class="whatsapp-text">راسلنا على الواتسآب</span>
+        <span class="whatsapp-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.896 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
 </body>
-
 </html>

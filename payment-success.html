@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DzDiniro - تأكيد الدفع</title>
+  <link rel="icon" type="image/png" href="favicon2.png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      color: #f0f0ff;
+      font-family: 'Tajawal', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 500px;
+    }
+    .icon { font-size: 5rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; }
+    .status-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .status-text { font-size: 1.1rem; line-height: 1.8; color: #a0a0c0; }
+    .btn {
+      display: inline-block;
+      padding: 0.9rem 2.5rem;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 1rem;
+      transition: all 0.3s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.5); }
+    .checking { color: #fbbf24; }
+    .paid { color: #10b981; }
+    .error { color: #ef4444; }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon" id="pageIcon">⏳</div>
+    <h1 id="pageTitle">جاري التحقق من الدفع...</h1>
+    <div class="status-box">
+      <div class="spinner" id="spinner"></div>
+      <p class="status-text" id="statusText">نتحقق من حالة دفعك مع Slick-Pay، يرجى الانتظار لحظة...</p>
+    </div>
+    <div id="actionArea"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dixrpmlkbxbopoebsslk.supabase.co';
+    const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/slickpay-handler`;
+
+    async function checkPaymentStatus(uuid) {
+      try {
+        const res = await fetch(`${FUNCTION_URL}?action=check-status&uuid=${uuid}`);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const uuid = params.get('invoice_uuid') || params.get('uuid') || localStorage.getItem('slickpay_uuid');
+      
+      if (!uuid) {
+        document.getElementById('pageIcon').textContent = '❌';
+        document.getElementById('pageTitle').textContent = 'رقم الفاتورة غير موجود';
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('statusText').textContent = 'لم يتم العثور على بيانات الدفع.';
+        document.getElementById('actionArea').innerHTML = '<a href="index.html" class="btn">العودة للرئيسية</a>';
+        return;
+      }
+
+      // Poll every 3 seconds up to 20 times (1 minute)
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      const poll = async () => {
+        attempts++;
+        const data = await checkPaymentStatus(uuid);
+
+        if (data && (data.status === 'paid' || data.status === 'completed')) {
+          localStorage.removeItem('slickpay_uuid');
+          
+          // Update local storage status for non-logged in users
+          try {
+            const orders = JSON.parse(localStorage.getItem('gamezone_orders') || '[]');
+            const orderIdx = orders.findIndex(o => o.external_payment_id === uuid || o.id === localStorage.getItem('last_order_code'));
+            if (orderIdx !== -1) {
+              orders[orderIdx].status = 'paid';
+              localStorage.setItem('gamezone_orders', JSON.stringify(orders));
+            }
+          } catch (e) { console.error('LocalStorage update error:', e); }
+
+          document.getElementById('pageIcon').textContent = '✅';
+          document.getElementById('pageTitle').textContent = 'تم الدفع بنجاح!';
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('statusText').innerHTML = '<span class="paid">تم تأكيد دفعك تلقائياً. سيتم معالجة طلبك في أقرب وقت ممكن. شكراً على ثقتك! 💙</span>';
+          document.getElementById('actionArea').innerHTML = '<a href="index.html" class="btn">العودة للرئيسية</a>';
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          document.getElementById('pageIcon').textContent = '⚠️';
+          document.getElementById('pageTitle').textContent = 'جاري المعالجة...';
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('statusText').innerHTML = '<span class="checking">طلبك قيد المعالجة. قد يستغرق التأكيد بضع دقائق. سنرسل لك إشعاراً عند التأكيد.</span>';
+          document.getElementById('actionArea').innerHTML = '<a href="index.html" class="btn">العودة للرئيسية</a>';
+          return;
+        }
+
+        setTimeout(poll, 3000);
+      };
+
+      setTimeout(poll, 2000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

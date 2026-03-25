@@ -1,0 +1,14 @@
+{
+  "name": "dzdiniro-automation-worker",
+  "version": "1.0.0",
+  "description": "Automated order fulfillment worker for DzDiniro (Free Fire & PUBG)",
+  "main": "worker.js",
+  "type": "module",
+  "scripts": {
+    "worker": "node worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "puppeteer": "^21.0.0"
+  }
+}
