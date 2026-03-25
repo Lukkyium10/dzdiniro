@@ -217,13 +217,20 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     }
     await new Promise(r => setTimeout(r, 2000));
 
-
     // ── STEP 4: Click Buy Now ──────────────────────────────────
     console.log('  📄 [4/5] Clicking Buy Now...');
-    const buyBtn = await page.$('button.bg-primary-red, button:has-text("شراء الآن"), button:has-text("Buy Now")');
-    if (buyBtn) {
-      await buyBtn.click();
-      await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
+    const buyBtnClicked = await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find(b =>
+        (b.className && b.className.includes('bg-primary-red')) &&
+        (b.textContent.includes('شراء الآن') || b.textContent.includes('Buy Now'))
+      ) || document.querySelector('button.bg-primary-red');
+
+      if (btn) { btn.click(); return true; }
+      return false;
+    });
+
+    if (buyBtnClicked) {
+      await new Promise(r => setTimeout(r, 6000)); // wait for navigation
       console.log('  ✅ [4/5] Proceeded to checkout page');
     } else {
       console.error('  ❌ [4/5] Buy Now button not found.');
@@ -276,10 +283,9 @@ async function chargeFreeFire(playerId, amount, orderCode) {
     }
 
     console.log('  ✅ Card details filled');
-
     // ── STEP 6: Final Pay Button ───────────────────────────────
     // Click the main Buy/Pay button
-    await page.waitForSelector('button.bg-primary-red, button:has-text("المتابعة الى شاشة الدفع")', { timeout: 10000 });
+    await new Promise(r => setTimeout(r, 2000));
 
     if (CONFIG.DRY_RUN) {
       console.log('  🧪 [DRY RUN] Would click Final Pay button here — skipping real payment.');
@@ -287,7 +293,15 @@ async function chargeFreeFire(playerId, amount, orderCode) {
       return false; // return false so order goes back to pending
     }
 
-    await page.click('button.bg-primary-red, button:has-text("المتابعة الى شاشة الدفع")');
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find(b =>
+        (b.className && b.className.includes('bg-primary-red')) &&
+        b.textContent.includes('المتابعة')
+      ) || document.querySelector('button.bg-primary-red');
+
+      if (btn) btn.click();
+    });
+
     await new Promise(r => setTimeout(r, 3000));
 
     console.log('  ⏳ [6/6] Payment initiated! Waiting for OTP confirmation from your phone (up to 3 minutes)...');
