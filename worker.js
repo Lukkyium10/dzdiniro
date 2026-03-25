@@ -154,7 +154,7 @@ async function chargeFreeFire(playerId, amount, orderCode) {
   try {
     browser = await puppeteer.launch({
       headless: CONFIG.HEADLESS,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
     const page = await browser.newPage();
