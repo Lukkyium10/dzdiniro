@@ -189,11 +189,13 @@ async function chargeFreeFire(playerId, amount, orderCode) {
 
     // Click "تسجيل الدخول" (Submit ID) button
     console.log('  ➡️ [2/5] Clicking submit ID button...');
-    const submitIdBtn = await page.$('button[type="submit"], button.bg-primary-red:has-text("تسجيل الدخول")');
-    if (submitIdBtn) {
-      await submitIdBtn.click();
-      await new Promise(r => setTimeout(r, 3000)); // wait for packages to load
-    }
+    await page.evaluate(() => {
+      const btn = document.querySelector('button[type="submit"]') ||
+        Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes("تسجيل الدخول"));
+      if (btn) btn.click();
+    });
+    await new Promise(r => setTimeout(r, 3000)); // wait for packages to load
+
     console.log('  ✅ [2/5] Player ID entered and submitted');
 
     // ── STEP 3: Select the correct package ─────────────────────
