@@ -1,0 +1,10 @@
+# Node.js
+node_modules/
+
+# Environment secrets (DO NOT upload these)
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
